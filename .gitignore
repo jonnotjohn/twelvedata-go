@@ -32,3 +32,5 @@ go.work.sum
 .vscode/
 
 local_dev/
+
+.DS_Store
