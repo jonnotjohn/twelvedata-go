@@ -34,3 +34,6 @@ go.work.sum
 local_dev/
 
 .DS_Store
+
+examples/go.mod
+examples/go.sum
