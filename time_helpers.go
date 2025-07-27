@@ -26,6 +26,7 @@ func (t *TDTime) UnmarshalJSON(data []byte) error {
 	}
 
 	// Sometimes the API returns Unix timestamps in seconds
+	// This will break on 20 November 2286, but that's a long way off
 	if fullStr := string(data); len(fullStr) == 10 {
 		if parsedInt, errInt := strconv.ParseInt(fullStr, 10, 64); errInt == nil {
 			t.Time = time.Unix(parsedInt, 0)
