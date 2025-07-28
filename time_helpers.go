@@ -11,6 +11,10 @@ type TDTime struct {
 	time.Time
 }
 
+type TDZonedTime struct {
+	time.Time
+}
+
 func (t *TDTime) UnmarshalJSON(data []byte) error {
 	// Remove quotes from JSON string
 	str := string(data[1 : len(data)-1])

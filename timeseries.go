@@ -105,12 +105,69 @@ type TimeSeriesResponseMeta struct {
 }
 
 type TimeSeriesCandle struct {
-	DateTime TDTime  `json:"datetime"`
-	Open     float64 `json:"open,string"`
-	Close    float64 `json:"close,string"`
-	High     float64 `json:"high,string"`
-	Low      float64 `json:"low,string"`
-	Volume   float64 `json:"volume,string"`
+	DateTime TDZonedTime `json:"datetime"`
+	Open     float64     `json:"open,string"`
+	Close    float64     `json:"close,string"`
+	High     float64     `json:"high,string"`
+	Low      float64     `json:"low,string"`
+	Volume   float64     `json:"volume,string"`
+}
+
+// UnmarshalJSON Parses JSON response, first taking the exchange timezone from the meta field (if present) and then
+// parsing each candle's datetime in the correct timezone.
+func (r *TimeSeriesResponse) UnmarshalJSON(data []byte) error {
+	type Alias TimeSeriesResponse
+	aux := &struct {
+		*Alias
+		Candles []jsoniter.RawMessage `json:"values"`
+	}{Alias: (*Alias)(r)}
+
+	if err := jsoniter.Unmarshal(data, aux); err != nil {
+		return errors.Wrap(err, "failed to unmarshal TimeSeriesResponse into Alias")
+	}
+
+	timezone, err := time.LoadLocation(r.Meta.ExchangeTimezone)
+	if err != nil {
+		return errors.Wrap(err, "failed to load exchange timezone")
+	}
+
+	r.Candles = make([]TimeSeriesCandle, len(aux.Candles))
+	for i, rawCandle := range aux.Candles {
+		if err := r.unmarshalCandleWithTimezone(rawCandle, &r.Candles[i], timezone); err != nil {
+			return errors.Errorf("error unmarshaling value %d: %+v", i, err)
+		}
+	}
+
+	return nil
+}
+
+func (r *TimeSeriesResponse) unmarshalCandleWithTimezone(data []byte, c *TimeSeriesCandle, tz *time.Location) error {
+	var temp struct {
+		DateTime string  `json:"datetime"`
+		Open     float64 `json:"open,string"`
+		Close    float64 `json:"close,string"`
+		High     float64 `json:"high,string"`
+		Low      float64 `json:"low,string"`
+		Volume   float64 `json:"volume,string"`
+	}
+
+	if err := jsoniter.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	parsedTime, err := time.ParseInLocation("2006-01-02 15:04:05", temp.DateTime, tz)
+	if err != nil {
+		return errors.Wrapf(err, "failed to parse datetime %s", temp.DateTime)
+	}
+
+	c.DateTime = TDZonedTime{Time: parsedTime}
+	c.Open = temp.Open
+	c.Close = temp.Close
+	c.High = temp.High
+	c.Low = temp.Low
+	c.Volume = temp.Volume
+
+	return nil
 }
 
 func (c *APIClient) GetTimeSeries(req TimeSeriesRequest) (candles *TimeSeriesResponse, err error) {
