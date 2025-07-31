@@ -141,6 +141,8 @@ func (r *TimeSeriesResponse) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// unmarshalCandleWithTimezone unmarshals a single candle from JSON data, applying the specified timezone to the datetime.
+// Supports time string formats: "2006-01-02 15:04:05" and "2006-01-02".
 func (r *TimeSeriesResponse) unmarshalCandleWithTimezone(data []byte, c *TimeSeriesCandle, tz *time.Location) error {
 	var temp struct {
 		DateTime string  `json:"datetime"`
@@ -155,9 +157,16 @@ func (r *TimeSeriesResponse) unmarshalCandleWithTimezone(data []byte, c *TimeSer
 		return err
 	}
 
-	parsedTime, err := time.ParseInLocation("2006-01-02 15:04:05", temp.DateTime, tz)
-	if err != nil {
-		return errors.Wrapf(err, "failed to parse datetime %s", temp.DateTime)
+	var parsedTime time.Time
+
+	parsedTime, _ = time.ParseInLocation("2006-01-02 15:04:05", temp.DateTime, tz)
+
+	if parsedTime.IsZero() {
+		parsedTime, _ = time.ParseInLocation("2006-01-02", temp.DateTime, tz)
+	}
+
+	if parsedTime.IsZero() {
+		return errors.Errorf("failed to parse datetime %s in timezone %s", temp.DateTime, tz)
 	}
 
 	c.DateTime = TDZonedTime{Time: parsedTime}
