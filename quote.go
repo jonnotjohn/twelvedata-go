@@ -75,7 +75,7 @@ func (req QuoteRequest) ToParams() (map[string]string, error) {
 	return params, nil
 }
 
-type QuoteResponse struct {
+type Quote struct {
 	Symbol                string            `json:"symbol"`
 	Name                  string            `json:"name"`
 	Exchange              string            `json:"exchange"`
@@ -114,7 +114,7 @@ type QuoteFiftyTwoWeek struct {
 	Range             string  `json:"range"`
 }
 
-func (c *APIClient) GetQuote(req QuoteRequest) (quote *QuoteResponse, err error) {
+func (c *APIClient) GetQuote(req QuoteRequest) (quote *Quote, err error) {
 	params, err := req.ToParams()
 	if err != nil {
 		return nil, errors.Wrap(err, "Error converting QuoteRequest to params")
