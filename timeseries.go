@@ -1,13 +1,14 @@
 package twelvedata
 
 import (
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
-	"time"
 )
 
 const (
-	UrlEndpointTimeSeries = "/time_series"
+	urlEndpointTimeSeries = "/time_series"
 )
 
 type TimeSeriesInterval string
@@ -185,7 +186,7 @@ func (c *APIClient) GetTimeSeries(req TimeSeriesRequest) (candles *TimeSeriesRes
 		return nil, errors.Wrap(err, "Error converting TimeSeriesRequest to params")
 	}
 
-	resp, err := c.Client.Get(UrlEndpointTimeSeries, params)
+	resp, err := c.Client.Get(urlEndpointTimeSeries, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error fetching time series data")
 	}

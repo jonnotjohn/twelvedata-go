@@ -5,19 +5,20 @@
 package twelvedata
 
 import (
+	"time"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"time"
 )
 
 type APIUrl string
 
 const (
-	APITwelveDataURL  APIUrl = "https://api.twelvedata.com"
-	APIKeyDefault            = "demo"
-	APITimeoutDefault        = 25
+	apiTwelveDataURL  APIUrl = "https://api.twelvedata.com"
+	apiKeyDefault            = "demo"
+	apiTimeoutDefault        = 25
 )
 
 type Config struct {
@@ -50,7 +51,7 @@ func NewAPIClient(cfg Config) (*APIClient, error) {
 	}
 
 	if cfg.Timeout == 0 {
-		cfg.Timeout = APITimeoutDefault
+		cfg.Timeout = apiTimeoutDefault
 	}
 
 	// Init resty client
@@ -62,11 +63,11 @@ func NewAPIClient(cfg Config) (*APIClient, error) {
 	cfg.RestyClient.SetTimeout(time.Duration(cfg.Timeout) * time.Second)
 
 	if len(cfg.APIUrl) == 0 {
-		cfg.APIUrl = APITwelveDataURL
+		cfg.APIUrl = apiTwelveDataURL
 	}
 
 	if len(cfg.APIKey) == 0 {
-		cfg.APIKey = APIKeyDefault
+		cfg.APIKey = apiKeyDefault
 	}
 
 	cfg.RestyClient.SetBaseURL(string(cfg.APIUrl))

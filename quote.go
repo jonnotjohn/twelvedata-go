@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	UrlEndpointQuote = "/quote"
+	urlEndpointQuote = "/quote"
 )
 
 type QuoteInterval string
@@ -120,7 +120,7 @@ func (c *APIClient) GetQuote(req QuoteRequest) (quote *Quote, err error) {
 		return nil, errors.Wrap(err, "Error converting QuoteRequest to params")
 	}
 
-	data, err := c.Client.Get(UrlEndpointQuote, params)
+	data, err := c.Client.Get(urlEndpointQuote, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error fetching quote data")
 	}
